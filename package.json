@@ -1,0 +1,92 @@
+{
+  "name": "copy-repo-name",
+  "displayName": "Copy Repo Name",
+  "publisher": "jhhtaylor",
+  "author": {
+    "name": "Jon Taylor",
+    "email": "jhhtaylor@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhhtaylor/copy-repo-name"
+  },
+  "description": "Copy the current repository name to clipboard from context menu",
+  "icon": "media/copy-repo-name.png",
+  "galleryBanner": {
+    "color": "#FF914D",
+    "theme": "dark"
+  },
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "repository",
+    "clipboard",
+    "copy",
+    "productivity"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copy-repo-name.copyRepoName",
+        "category": "Copy Repo Name",
+        "title": "Copy Repo Name"
+      }
+    ],
+    "menus": {
+      "editor/title/context": [
+        {
+          "command": "copy-repo-name.copyRepoName",
+          "group": "1_copy"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "copy-repo-name.copyRepoName",
+          "group": "6_copypath"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "copy-repo-name.copyRepoName"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/vscode": "^1.99.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.33.1",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.30.1",
+    "glob": "^11.1.0",
+    "mocha": "^11.7.1",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.101.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
