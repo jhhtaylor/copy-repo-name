@@ -10,13 +10,16 @@
     "type": "git",
     "url": "https://github.com/jhhtaylor/copy-repo-name"
   },
+  "sponsor": {
+    "url": "https://www.buymeacoffee.com/jhhtaylor"
+  },
   "description": "Copy the current repository name to clipboard from context menu",
   "icon": "media/copy-repo-name.png",
   "galleryBanner": {
     "color": "#FF914D",
     "theme": "dark"
   },
-  "version": "0.0.1",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.99.0"
   },

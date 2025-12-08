@@ -2,6 +2,12 @@
 
 All notable changes to the "Copy Repo Name" extension will be documented in this file.
 
+## [0.1.1] - 2025-12-08
+
+### Added
+- Sponsor link in package.json and marketplace page
+- Support message in README.md
+
 ## [0.0.1] - 2025-11-30
 
 ### Added
