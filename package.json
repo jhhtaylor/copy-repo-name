@@ -19,7 +19,7 @@
     "color": "#FF914D",
     "theme": "dark"
   },
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -43,6 +43,11 @@
         "command": "copy-repo-name.copyRepoName",
         "category": "Copy Repo Name",
         "title": "Copy Repo Name"
+      },
+      {
+        "command": "copy-repo-name.copyRepoPath",
+        "category": "Copy Repo Name",
+        "title": "Copy Repo Path"
       }
     ],
     "menus": {
@@ -50,17 +55,28 @@
         {
           "command": "copy-repo-name.copyRepoName",
           "group": "1_copy"
+        },
+        {
+          "command": "copy-repo-name.copyRepoPath",
+          "group": "1_copy"
         }
       ],
       "explorer/context": [
         {
           "command": "copy-repo-name.copyRepoName",
           "group": "6_copypath"
+        },
+        {
+          "command": "copy-repo-name.copyRepoPath",
+          "group": "6_copypath"
         }
       ],
       "commandPalette": [
         {
           "command": "copy-repo-name.copyRepoName"
+        },
+        {
+          "command": "copy-repo-name.copyRepoPath"
         }
       ]
     }

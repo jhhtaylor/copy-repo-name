@@ -2,6 +2,11 @@
 
 All notable changes to the "Copy Repo Name" extension will be documented in this file.
 
+## [0.1.2] - 2026-06-13
+
+### Added
+- New "Copy Repo Path" command that copies a conventional repo path (`~/source/repos/<repoName>`) to the clipboard, using forward slashes for cross-platform compatibility
+
 ## [0.1.1] - 2025-12-08
 
 ### Added

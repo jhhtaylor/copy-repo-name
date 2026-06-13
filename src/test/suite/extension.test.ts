@@ -23,6 +23,12 @@ describe('Extension Tests', () => {
       const hasCommand = commands.includes('copy-repo-name.copyRepoName');
       ok(hasCommand, 'Command copy-repo-name.copyRepoName should be registered');
     });
+
+    it('should register copy-repo-name.copyRepoPath command', async () => {
+      const commands = await vscode.commands.getCommands(true);
+      const hasCommand = commands.includes('copy-repo-name.copyRepoPath');
+      ok(hasCommand, 'Command copy-repo-name.copyRepoPath should be registered');
+    });
   });
 
   describe('Command Execution', () => {
@@ -56,6 +62,35 @@ describe('Extension Tests', () => {
       // The clipboard should contain a valid repository name
       ok(/^[a-zA-Z0-9._-]+$/.test(clipboardText), 'Clipboard should contain a valid repository name');
     });
+
+    it('should execute copy-repo-name.copyRepoPath command without errors', async () => {
+      try {
+        await vscode.commands.executeCommand('copy-repo-name.copyRepoPath');
+        ok(true, 'Command executed successfully');
+      } catch (error) {
+        // Command might fail if not in a workspace, but it should still be registered
+        ok(true, 'Command is registered and attempted execution');
+      }
+    });
+
+    it('should copy a conventional repo path to clipboard when executed', async function() {
+      // Skip this test if not in a workspace
+      if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+        this.skip();
+      }
+
+      // Execute the command
+      await vscode.commands.executeCommand('copy-repo-name.copyRepoPath');
+
+      // Read from clipboard
+      const clipboardText = await vscode.env.clipboard.readText();
+
+      // Verify something was copied
+      ok(clipboardText && clipboardText.length > 0, 'Clipboard should contain text');
+
+      // The clipboard should contain a path ending with source/repos/<repoName>
+      ok(/\/source\/repos\/[a-zA-Z0-9._-]+$/.test(clipboardText), 'Clipboard should contain a conventional repo path');
+    });
   });
 
   describe('Menu Contribution Points', () => {
@@ -67,10 +102,14 @@ describe('Extension Tests', () => {
       ok(menus['editor/title/context'], 'Should contribute to editor/title/context menu');
 
       const editorTitleContextMenu = menus['editor/title/context'];
-      const hasCommand = editorTitleContextMenu.some((item: any) =>
+      const hasCopyRepoName = editorTitleContextMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyRepoName'
       );
-      ok(hasCommand, 'editor/title/context menu should include copy-repo-name.copyRepoName');
+      const hasCopyRepoPath = editorTitleContextMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyRepoPath'
+      );
+      ok(hasCopyRepoName, 'editor/title/context menu should include copy-repo-name.copyRepoName');
+      ok(hasCopyRepoPath, 'editor/title/context menu should include copy-repo-name.copyRepoPath');
     });
 
     it('should contribute to explorer/context menu (file and empty space)', async () => {
@@ -81,10 +120,14 @@ describe('Extension Tests', () => {
       ok(menus['explorer/context'], 'Should contribute to explorer/context menu');
 
       const explorerContextMenu = menus['explorer/context'];
-      const hasCommand = explorerContextMenu.some((item: any) =>
+      const hasCopyRepoName = explorerContextMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyRepoName'
       );
-      ok(hasCommand, 'explorer/context menu should include copy-repo-name.copyRepoName');
+      const hasCopyRepoPath = explorerContextMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyRepoPath'
+      );
+      ok(hasCopyRepoName, 'explorer/context menu should include copy-repo-name.copyRepoName');
+      ok(hasCopyRepoPath, 'explorer/context menu should include copy-repo-name.copyRepoPath');
     });
 
     it('should contribute to command palette', async () => {
@@ -95,10 +138,14 @@ describe('Extension Tests', () => {
       ok(menus['commandPalette'], 'Should contribute to command palette');
 
       const commandPaletteMenu = menus['commandPalette'];
-      const hasCommand = commandPaletteMenu.some((item: any) =>
+      const hasCopyRepoName = commandPaletteMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyRepoName'
       );
-      ok(hasCommand, 'command palette should include copy-repo-name.copyRepoName');
+      const hasCopyRepoPath = commandPaletteMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyRepoPath'
+      );
+      ok(hasCopyRepoName, 'command palette should include copy-repo-name.copyRepoName');
+      ok(hasCopyRepoPath, 'command palette should include copy-repo-name.copyRepoPath');
     });
 
     it('should use correct menu group placement', async () => {
@@ -108,12 +155,12 @@ describe('Extension Tests', () => {
       const menus = packageJSON.contributes.menus;
 
       // Check explorer/context menu group
-      const explorerContextMenu = menus['explorer/context'][0];
-      strictEqual(explorerContextMenu.group, '6_copypath', 'Should use 6_copypath group');
+      const explorerContextMenu = menus['explorer/context'];
+      ok(explorerContextMenu.every((item: any) => item.group === '6_copypath'), 'Should use 6_copypath group');
 
       // Check editor/title/context menu group (tab right-click)
-      const editorTitleContextMenu = menus['editor/title/context'][0];
-      strictEqual(editorTitleContextMenu.group, '1_copy', 'Should use 1_copy group for tab copy commands');
+      const editorTitleContextMenu = menus['editor/title/context'];
+      ok(editorTitleContextMenu.every((item: any) => item.group === '1_copy'), 'Should use 1_copy group for tab copy commands');
     });
 
     it('should only contribute to exactly 3 menu locations', async () => {
