@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as os from 'os';
 import { execSync } from 'child_process';
 import { extractRepoNameFromUrl } from './utils';
 
@@ -22,14 +21,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     const copyRepoPath = vscode.commands.registerCommand('copy-repo-name.copyRepoPath', async () => {
         try {
-            const repoName = await getRepositoryName();
+            const repoPath = getWorkspacePath();
 
-            if (repoName) {
-                const repoPath = `${os.homedir().replace(/\\/g, '/')}/source/repos/${repoName}`;
+            if (repoPath) {
                 await vscode.env.clipboard.writeText(repoPath);
                 vscode.window.showInformationMessage(`Copied repo path: ${repoPath}`);
             } else {
-                vscode.window.showWarningMessage('Could not determine repo name. Make sure you are in a Git repository.');
+                vscode.window.showWarningMessage('Could not determine repo path. Make sure you have a workspace open.');
             }
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to copy repo path: ${error}`);
@@ -37,6 +35,16 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(copyRepoName, copyRepoPath);
+}
+
+function getWorkspacePath(): string | null {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        return null;
+    }
+
+    return workspaceFolders[0].uri.fsPath;
 }
 
 async function getRepositoryName(): Promise<string | null> {

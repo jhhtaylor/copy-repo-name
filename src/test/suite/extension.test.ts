@@ -73,23 +73,20 @@ describe('Extension Tests', () => {
       }
     });
 
-    it('should copy a conventional repo path to clipboard when executed', async function() {
+    it('should copy the workspace folder path to clipboard when executed', async function() {
       // Skip this test if not in a workspace
       if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
         this.skip();
       }
 
-      // Execute the command
       await vscode.commands.executeCommand('copy-repo-name.copyRepoPath');
 
-      // Read from clipboard
       const clipboardText = await vscode.env.clipboard.readText();
 
-      // Verify something was copied
       ok(clipboardText && clipboardText.length > 0, 'Clipboard should contain text');
 
-      // The clipboard should contain a path ending with source/repos/<repoName>
-      ok(/\/source\/repos\/[a-zA-Z0-9._-]+$/.test(clipboardText), 'Clipboard should contain a conventional repo path');
+      // Should be an absolute path
+      ok(clipboardText.startsWith('/') || /^[A-Za-z]:/.test(clipboardText), 'Clipboard should contain an absolute path');
     });
   });
 
