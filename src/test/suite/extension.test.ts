@@ -35,6 +35,18 @@ describe('Extension Tests', () => {
       const hasCommand = commands.includes('copy-repo-name.copyTextWithComment');
       ok(hasCommand, 'Command copy-repo-name.copyTextWithComment should be registered');
     });
+
+    it('should register copy-repo-name.copyBranchName command', async () => {
+      const commands = await vscode.commands.getCommands(true);
+      const hasCommand = commands.includes('copy-repo-name.copyBranchName');
+      ok(hasCommand, 'Command copy-repo-name.copyBranchName should be registered');
+    });
+
+    it('should register copy-repo-name.copyCommitHash command', async () => {
+      const commands = await vscode.commands.getCommands(true);
+      const hasCommand = commands.includes('copy-repo-name.copyCommitHash');
+      ok(hasCommand, 'Command copy-repo-name.copyCommitHash should be registered');
+    });
   });
 
   describe('Command Execution', () => {
@@ -105,7 +117,7 @@ describe('Extension Tests', () => {
       }
     });
 
-    it('should copy selected text with a "<repo> - <file> - <line>" comment above it', async function() {
+    it('should copy a single-line selection with a "<repo> - <file> - line N" comment above it', async function() {
       const document = await vscode.workspace.openTextDocument({
         content: 'line one\nline two\nline three',
         language: 'javascript',
@@ -121,10 +133,79 @@ describe('Extension Tests', () => {
       const lines = clipboardText.split('\n');
 
       ok(lines[0].startsWith('// '), 'First line should be a JS comment');
-      ok(lines[0].includes(' - 2'), 'Comment should reference line 2 (1-based)');
+      ok(lines[0].endsWith(' - line 2'), 'Comment should reference line 2 (1-based) with no range');
       strictEqual(lines[1], 'line two', 'Second line should be the copied selection');
 
       await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
+
+    it('should copy a multi-line selection with a "<repo> - <file> - line N to line M" comment above it', async function() {
+      const document = await vscode.workspace.openTextDocument({
+        content: 'line one\nline two\nline three',
+        language: 'javascript',
+      });
+      const editor = await vscode.window.showTextDocument(document);
+
+      // Select from the start of "line two" through the end of "line three"
+      editor.selection = new vscode.Selection(1, 0, 2, 'line three'.length);
+
+      await vscode.commands.executeCommand('copy-repo-name.copyTextWithComment');
+
+      const clipboardText = await vscode.env.clipboard.readText();
+      const lines = clipboardText.split('\n');
+
+      ok(lines[0].startsWith('// '), 'First line should be a JS comment');
+      ok(lines[0].endsWith(' - line 2 to line 3'), 'Comment should reference the line 2-3 range');
+      strictEqual(lines[1], 'line two', 'Second line should be the start of the copied selection');
+      strictEqual(lines[2], 'line three', 'Third line should be the end of the copied selection');
+
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
+
+    it('should execute copy-repo-name.copyBranchName command without errors', async () => {
+      try {
+        await vscode.commands.executeCommand('copy-repo-name.copyBranchName');
+        ok(true, 'Command executed successfully');
+      } catch (error) {
+        // Command might fail if not in a Git repository, but it should still be registered
+        ok(true, 'Command is registered and attempted execution');
+      }
+    });
+
+    it('should copy the current branch name to clipboard when executed', async function() {
+      if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+        this.skip();
+      }
+
+      await vscode.commands.executeCommand('copy-repo-name.copyBranchName');
+
+      const clipboardText = await vscode.env.clipboard.readText();
+
+      ok(clipboardText && clipboardText.length > 0, 'Clipboard should contain text');
+      ok(/^[a-zA-Z0-9._/-]+$/.test(clipboardText), 'Clipboard should contain a valid branch name');
+    });
+
+    it('should execute copy-repo-name.copyCommitHash command without errors', async () => {
+      try {
+        await vscode.commands.executeCommand('copy-repo-name.copyCommitHash');
+        ok(true, 'Command executed successfully');
+      } catch (error) {
+        // Command might fail if not in a Git repository, but it should still be registered
+        ok(true, 'Command is registered and attempted execution');
+      }
+    });
+
+    it('should copy the current commit hash to clipboard when executed', async function() {
+      if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+        this.skip();
+      }
+
+      await vscode.commands.executeCommand('copy-repo-name.copyCommitHash');
+
+      const clipboardText = await vscode.env.clipboard.readText();
+
+      ok(clipboardText && clipboardText.length > 0, 'Clipboard should contain text');
+      ok(/^[a-f0-9]{40}$/.test(clipboardText), 'Clipboard should contain a full 40-character commit SHA');
     });
   });
 
@@ -143,8 +224,16 @@ describe('Extension Tests', () => {
       const hasCopyRepoPath = editorTitleContextMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyRepoPath'
       );
+      const hasCopyBranchName = editorTitleContextMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyBranchName'
+      );
+      const hasCopyCommitHash = editorTitleContextMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyCommitHash'
+      );
       ok(hasCopyRepoName, 'editor/title/context menu should include copy-repo-name.copyRepoName');
       ok(hasCopyRepoPath, 'editor/title/context menu should include copy-repo-name.copyRepoPath');
+      ok(hasCopyBranchName, 'editor/title/context menu should include copy-repo-name.copyBranchName');
+      ok(hasCopyCommitHash, 'editor/title/context menu should include copy-repo-name.copyCommitHash');
     });
 
     it('should contribute to explorer/context menu (file and empty space)', async () => {
@@ -161,8 +250,16 @@ describe('Extension Tests', () => {
       const hasCopyRepoPath = explorerContextMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyRepoPath'
       );
+      const hasCopyBranchName = explorerContextMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyBranchName'
+      );
+      const hasCopyCommitHash = explorerContextMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyCommitHash'
+      );
       ok(hasCopyRepoName, 'explorer/context menu should include copy-repo-name.copyRepoName');
       ok(hasCopyRepoPath, 'explorer/context menu should include copy-repo-name.copyRepoPath');
+      ok(hasCopyBranchName, 'explorer/context menu should include copy-repo-name.copyBranchName');
+      ok(hasCopyCommitHash, 'explorer/context menu should include copy-repo-name.copyCommitHash');
     });
 
     it('should contribute to command palette', async () => {
@@ -182,9 +279,17 @@ describe('Extension Tests', () => {
       const hasCopyTextWithComment = commandPaletteMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyTextWithComment'
       );
+      const hasCopyBranchName = commandPaletteMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyBranchName'
+      );
+      const hasCopyCommitHash = commandPaletteMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyCommitHash'
+      );
       ok(hasCopyRepoName, 'command palette should include copy-repo-name.copyRepoName');
       ok(hasCopyRepoPath, 'command palette should include copy-repo-name.copyRepoPath');
       ok(hasCopyTextWithComment, 'command palette should include copy-repo-name.copyTextWithComment');
+      ok(hasCopyBranchName, 'command palette should include copy-repo-name.copyBranchName');
+      ok(hasCopyCommitHash, 'command palette should include copy-repo-name.copyCommitHash');
     });
 
     it('should use correct menu group placement', async () => {

@@ -2,6 +2,15 @@
 
 All notable changes to the "Copy Repo Name" extension will be documented in this file.
 
+## [0.1.5] - 2026-07-09
+
+### Added
+- New "Copy Branch Name" command that copies the current Git branch name to the clipboard
+- New "Copy Commit Hash" command that copies the current Git commit hash (full SHA) to the clipboard
+
+### Changed
+- "Copy Text With Repo Comment" now reports the copied line range as `line <N>` for a single line, or `line <start> to line <end>` for a multi-line selection, instead of just the first line number
+
 ## [0.1.4] - 2026-07-09
 
 ### Added

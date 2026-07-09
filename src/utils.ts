@@ -26,10 +26,12 @@ export function extractRepoNameFromUrl(remoteUrl: string): string | null {
 
 /**
  * Build the identifier text placed above copied code: repo name, file name,
- * and the line number of the first copied/selected line.
+ * and the copied line range. Collapses to a single "line N" when the range
+ * covers only one line.
  */
-export function buildCopyIdentifier(repoName: string, fileName: string, lineNumber: number): string {
-    return `${repoName} - ${fileName} - ${lineNumber}`;
+export function buildCopyIdentifier(repoName: string, fileName: string, startLine: number, endLine: number): string {
+    const location = startLine === endLine ? `line ${startLine}` : `line ${startLine} to line ${endLine}`;
+    return `${repoName} - ${fileName} - ${location}`;
 }
 
 /**

@@ -19,7 +19,7 @@
     "color": "#FF914D",
     "theme": "dark"
   },
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -53,6 +53,16 @@
         "command": "copy-repo-name.copyTextWithComment",
         "category": "Copy Repo Name",
         "title": "Copy Text With Repo Comment"
+      },
+      {
+        "command": "copy-repo-name.copyBranchName",
+        "category": "Copy Repo Name",
+        "title": "Copy Branch Name"
+      },
+      {
+        "command": "copy-repo-name.copyCommitHash",
+        "category": "Copy Repo Name",
+        "title": "Copy Commit Hash"
       }
     ],
     "keybindings": [
@@ -72,6 +82,14 @@
         {
           "command": "copy-repo-name.copyRepoPath",
           "group": "1_copy"
+        },
+        {
+          "command": "copy-repo-name.copyBranchName",
+          "group": "1_copy"
+        },
+        {
+          "command": "copy-repo-name.copyCommitHash",
+          "group": "1_copy"
         }
       ],
       "explorer/context": [
@@ -81,6 +99,14 @@
         },
         {
           "command": "copy-repo-name.copyRepoPath",
+          "group": "6_copypath"
+        },
+        {
+          "command": "copy-repo-name.copyBranchName",
+          "group": "6_copypath"
+        },
+        {
+          "command": "copy-repo-name.copyCommitHash",
           "group": "6_copypath"
         }
       ],
@@ -93,6 +119,12 @@
         },
         {
           "command": "copy-repo-name.copyTextWithComment"
+        },
+        {
+          "command": "copy-repo-name.copyBranchName"
+        },
+        {
+          "command": "copy-repo-name.copyCommitHash"
         }
       ]
     }

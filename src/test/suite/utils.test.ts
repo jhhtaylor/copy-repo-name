@@ -65,14 +65,14 @@ describe('extractRepoNameFromUrl', () => {
 });
 
 describe('buildCopyIdentifier', () => {
-  it('joins repo name, file name, and line number with " - "', () => {
-    const result = buildCopyIdentifier('copy-repo-name', 'extension.ts', 42);
-    strictEqual(result, 'copy-repo-name - extension.ts - 42');
+  it('collapses to "line N" when start and end are the same line', () => {
+    const result = buildCopyIdentifier('copy-repo-name', 'extension.ts', 42, 42);
+    strictEqual(result, 'copy-repo-name - extension.ts - line 42');
   });
 
-  it('uses the given line number as-is (1-based)', () => {
-    const result = buildCopyIdentifier('copy-repo-name', 'utils.ts', 1);
-    strictEqual(result, 'copy-repo-name - utils.ts - 1');
+  it('uses "line N to line M" when the range spans multiple lines', () => {
+    const result = buildCopyIdentifier('copy-repo-name', 'utils.ts', 1, 10);
+    strictEqual(result, 'copy-repo-name - utils.ts - line 1 to line 10');
   });
 });
 
@@ -83,43 +83,43 @@ describe('generateCommentForIdentifier', () => {
   > = {
     javascript: {
       languageId: 'javascript',
-      identifier: 'copy-repo-name - example.js - 1',
-      expectedComment: '// copy-repo-name - example.js - 1',
+      identifier: 'copy-repo-name - example.js - line 1',
+      expectedComment: '// copy-repo-name - example.js - line 1',
     },
     typescript: {
       languageId: 'typescript',
-      identifier: 'copy-repo-name - example.ts - 10',
-      expectedComment: '// copy-repo-name - example.ts - 10',
+      identifier: 'copy-repo-name - example.ts - line 10 to line 20',
+      expectedComment: '// copy-repo-name - example.ts - line 10 to line 20',
     },
     python: {
       languageId: 'python',
-      identifier: 'copy-repo-name - example.py - 5',
-      expectedComment: '# copy-repo-name - example.py - 5',
+      identifier: 'copy-repo-name - example.py - line 5',
+      expectedComment: '# copy-repo-name - example.py - line 5',
     },
     html: {
       languageId: 'html',
-      identifier: 'copy-repo-name - example.html - 3',
-      expectedComment: '<!-- copy-repo-name - example.html - 3 -->',
+      identifier: 'copy-repo-name - example.html - line 3',
+      expectedComment: '<!-- copy-repo-name - example.html - line 3 -->',
     },
     css: {
       languageId: 'css',
-      identifier: 'copy-repo-name - example.css - 7',
-      expectedComment: '/* copy-repo-name - example.css - 7 */',
+      identifier: 'copy-repo-name - example.css - line 7',
+      expectedComment: '/* copy-repo-name - example.css - line 7 */',
     },
     latex: {
       languageId: 'latex',
-      identifier: 'copy-repo-name - example.tex - 2',
-      expectedComment: '% copy-repo-name - example.tex - 2',
+      identifier: 'copy-repo-name - example.tex - line 2',
+      expectedComment: '% copy-repo-name - example.tex - line 2',
     },
     plaintext: {
       languageId: 'plaintext',
-      identifier: 'copy-repo-name - example.txt - 1',
-      expectedComment: 'copy-repo-name - example.txt - 1',
+      identifier: 'copy-repo-name - example.txt - line 1',
+      expectedComment: 'copy-repo-name - example.txt - line 1',
     },
     unrecognized: {
       languageId: 'nonexistent-language',
-      identifier: 'copy-repo-name - example.unknown - 1',
-      expectedComment: '// copy-repo-name - example.unknown - 1',
+      identifier: 'copy-repo-name - example.unknown - line 1',
+      expectedComment: '// copy-repo-name - example.unknown - line 1',
     },
   };
 
