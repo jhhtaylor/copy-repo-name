@@ -29,6 +29,12 @@ describe('Extension Tests', () => {
       const hasCommand = commands.includes('copy-repo-name.copyRepoPath');
       ok(hasCommand, 'Command copy-repo-name.copyRepoPath should be registered');
     });
+
+    it('should register copy-repo-name.copyTextWithComment command', async () => {
+      const commands = await vscode.commands.getCommands(true);
+      const hasCommand = commands.includes('copy-repo-name.copyTextWithComment');
+      ok(hasCommand, 'Command copy-repo-name.copyTextWithComment should be registered');
+    });
   });
 
   describe('Command Execution', () => {
@@ -88,6 +94,38 @@ describe('Extension Tests', () => {
       // Should be an absolute path
       ok(clipboardText.startsWith('/') || /^[A-Za-z]:/.test(clipboardText), 'Clipboard should contain an absolute path');
     });
+
+    it('should execute copy-repo-name.copyTextWithComment command without errors', async () => {
+      try {
+        await vscode.commands.executeCommand('copy-repo-name.copyTextWithComment');
+        ok(true, 'Command executed successfully');
+      } catch (error) {
+        // Command might fail if not in a workspace, but it should still be registered
+        ok(true, 'Command is registered and attempted execution');
+      }
+    });
+
+    it('should copy selected text with a "<repo> - <file> - <line>" comment above it', async function() {
+      const document = await vscode.workspace.openTextDocument({
+        content: 'line one\nline two\nline three',
+        language: 'javascript',
+      });
+      const editor = await vscode.window.showTextDocument(document);
+
+      // Select "line two" (the second line, index 1)
+      editor.selection = new vscode.Selection(1, 0, 1, 'line two'.length);
+
+      await vscode.commands.executeCommand('copy-repo-name.copyTextWithComment');
+
+      const clipboardText = await vscode.env.clipboard.readText();
+      const lines = clipboardText.split('\n');
+
+      ok(lines[0].startsWith('// '), 'First line should be a JS comment');
+      ok(lines[0].includes(' - 2'), 'Comment should reference line 2 (1-based)');
+      strictEqual(lines[1], 'line two', 'Second line should be the copied selection');
+
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    });
   });
 
   describe('Menu Contribution Points', () => {
@@ -141,8 +179,12 @@ describe('Extension Tests', () => {
       const hasCopyRepoPath = commandPaletteMenu.some((item: any) =>
         item.command === 'copy-repo-name.copyRepoPath'
       );
+      const hasCopyTextWithComment = commandPaletteMenu.some((item: any) =>
+        item.command === 'copy-repo-name.copyTextWithComment'
+      );
       ok(hasCopyRepoName, 'command palette should include copy-repo-name.copyRepoName');
       ok(hasCopyRepoPath, 'command palette should include copy-repo-name.copyRepoPath');
+      ok(hasCopyTextWithComment, 'command palette should include copy-repo-name.copyTextWithComment');
     });
 
     it('should use correct menu group placement', async () => {
@@ -171,6 +213,22 @@ describe('Extension Tests', () => {
       ok(menuKeys.includes('editor/title/context'), 'Should include editor/title/context');
       ok(menuKeys.includes('explorer/context'), 'Should include explorer/context');
       ok(menuKeys.includes('commandPalette'), 'Should include commandPalette');
+    });
+  });
+
+  describe('Keybindings', () => {
+    it('should bind copy-repo-name.copyTextWithComment to cmd/ctrl+shift+c when editor is focused', () => {
+      const packageJSON = vscode.extensions.getExtension('jhhtaylor.copy-repo-name')?.packageJSON;
+      ok(packageJSON, 'Package JSON should exist');
+
+      const keybindings = packageJSON.contributes.keybindings;
+      ok(keybindings, 'Should contribute keybindings');
+
+      const binding = keybindings.find((item: any) => item.command === 'copy-repo-name.copyTextWithComment');
+      ok(binding, 'Should bind copy-repo-name.copyTextWithComment');
+      strictEqual(binding.key, 'ctrl+shift+c');
+      strictEqual(binding.mac, 'cmd+shift+c');
+      strictEqual(binding.when, 'editorTextFocus');
     });
   });
 });

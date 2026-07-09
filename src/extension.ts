@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { extractRepoNameFromUrl } from './utils';
+import { extractRepoNameFromUrl, buildCopyIdentifier, generateCommentForIdentifier } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
     const copyRepoName = vscode.commands.registerCommand('copy-repo-name.copyRepoName', async () => {
@@ -34,7 +34,32 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(copyRepoName, copyRepoPath);
+    const copyTextWithComment = vscode.commands.registerCommand('copy-repo-name.copyTextWithComment', async () => {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showWarningMessage('No active editor. Open a file to copy text with a comment.');
+                return;
+            }
+
+            const document = editor.document;
+            const selection = editor.selection;
+            const text = selection.isEmpty ? document.getText() : document.getText(selection);
+            const firstLine = (selection.isEmpty ? 0 : selection.start.line) + 1;
+
+            const repoName = (await getRepositoryName()) ?? 'Untitled';
+            const fileName = path.basename(document.uri.fsPath);
+            const identifier = buildCopyIdentifier(repoName, fileName, firstLine);
+            const comment = generateCommentForIdentifier(document.languageId, identifier);
+
+            await vscode.env.clipboard.writeText(`${comment}\n${text}`);
+            vscode.window.showInformationMessage('Text with repo comment copied to clipboard!');
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to copy text with comment: ${error}`);
+        }
+    });
+
+    context.subscriptions.push(copyRepoName, copyRepoPath, copyTextWithComment);
 }
 
 function getWorkspacePath(): string | null {

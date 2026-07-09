@@ -2,6 +2,17 @@
 
 All notable changes to the "Copy Repo Name" extension will be documented in this file.
 
+## [0.1.4] - 2026-07-09
+
+### Added
+- New "Copy Text With Repo Comment" command that copies the selected text (or whole file) to the clipboard with a `<repo-name> - <file-name> - <line-number>` comment above it, using the comment syntax for the file's language
+- Keybinding `Cmd+Shift+C` (macOS) / `Ctrl+Shift+C` (Windows/Linux) for the new command
+
+## [0.1.3] - 2026-06-19
+
+### Fixed
+- "Copy Repo Path" now uses the actual workspace folder path instead of a hardcoded `~/source/repos/<repoName>` path
+
 ## [0.1.2] - 2026-06-13
 
 ### Added
