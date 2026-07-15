@@ -81,6 +81,28 @@ describe('Extension Tests', () => {
       ok(/^[a-zA-Z0-9._-]+$/.test(clipboardText), 'Clipboard should contain a valid repository name');
     });
 
+    it('should resolve the repo name from an explicit resource URI (as passed by context-menu invocations)', async function() {
+      // Skip this test if not in a workspace
+      if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+        this.skip();
+      }
+
+      // Context menu commands (editor tab / Explorer) receive the clicked
+      // resource's URI as the first argument, distinct from whatever the
+      // active editor happens to be. This guards against always falling
+      // back to workspaceFolders[0] regardless of which resource/folder
+      // the command was actually invoked on.
+      const workspaceFolder = vscode.workspace.workspaceFolders[0];
+      const packageJsonUri = vscode.Uri.joinPath(workspaceFolder.uri, 'package.json');
+
+      await vscode.commands.executeCommand('copy-repo-name.copyRepoName', packageJsonUri);
+
+      const clipboardText = await vscode.env.clipboard.readText();
+
+      ok(clipboardText && clipboardText.length > 0, 'Clipboard should contain text');
+      ok(/^[a-zA-Z0-9._-]+$/.test(clipboardText), 'Clipboard should contain a valid repository name');
+    });
+
     it('should execute copy-repo-name.copyRepoPath command without errors', async () => {
       try {
         await vscode.commands.executeCommand('copy-repo-name.copyRepoPath');

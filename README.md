@@ -64,6 +64,8 @@ The extension attempts to get the repository name from your Git remote URL (e.g.
 
 "Copy Text With Repo Comment" builds the comment from the repository name, the current file's name, and the copied line range, then wraps it in the comment syntax for the file's language.
 
+In a multi-root workspace (multiple folders added to the same VS Code window), every command resolves the repository/branch/commit from whichever workspace folder actually contains the file you copied or right-clicked — not just the first folder in the workspace.
+
 ## Requirements
 
 VS Code version 1.99.0 or higher

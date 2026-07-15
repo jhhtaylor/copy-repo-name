@@ -4,9 +4,9 @@ import { execSync } from 'child_process';
 import { extractRepoNameFromUrl, buildCopyIdentifier, generateCommentForIdentifier } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
-    const copyRepoName = vscode.commands.registerCommand('copy-repo-name.copyRepoName', async () => {
+    const copyRepoName = vscode.commands.registerCommand('copy-repo-name.copyRepoName', async (resourceUri?: vscode.Uri) => {
         try {
-            const repoName = await getRepositoryName();
+            const repoName = await getRepositoryName(resourceUri ?? vscode.window.activeTextEditor?.document.uri);
 
             if (repoName) {
                 await vscode.env.clipboard.writeText(repoName);
@@ -19,9 +19,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const copyRepoPath = vscode.commands.registerCommand('copy-repo-name.copyRepoPath', async () => {
+    const copyRepoPath = vscode.commands.registerCommand('copy-repo-name.copyRepoPath', async (resourceUri?: vscode.Uri) => {
         try {
-            const repoPath = getWorkspacePath();
+            const repoPath = getWorkspacePath(resourceUri ?? vscode.window.activeTextEditor?.document.uri);
 
             if (repoPath) {
                 await vscode.env.clipboard.writeText(repoPath);
@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
 
-            const repoName = (await getRepositoryName()) ?? 'Untitled';
+            const repoName = (await getRepositoryName(document.uri)) ?? 'Untitled';
             const fileName = path.basename(document.uri.fsPath);
             const identifier = buildCopyIdentifier(repoName, fileName, startLine + 1, endLine + 1);
             const comment = generateCommentForIdentifier(document.languageId, identifier);
@@ -74,9 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const copyBranchName = vscode.commands.registerCommand('copy-repo-name.copyBranchName', async () => {
+    const copyBranchName = vscode.commands.registerCommand('copy-repo-name.copyBranchName', async (resourceUri?: vscode.Uri) => {
         try {
-            const branchName = await getBranchName();
+            const branchName = await getBranchName(resourceUri ?? vscode.window.activeTextEditor?.document.uri);
 
             if (branchName) {
                 await vscode.env.clipboard.writeText(branchName);
@@ -89,9 +89,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const copyCommitHash = vscode.commands.registerCommand('copy-repo-name.copyCommitHash', async () => {
+    const copyCommitHash = vscode.commands.registerCommand('copy-repo-name.copyCommitHash', async (resourceUri?: vscode.Uri) => {
         try {
-            const commitHash = await getCommitHash();
+            const commitHash = await getCommitHash(resourceUri ?? vscode.window.activeTextEditor?.document.uri);
 
             if (commitHash) {
                 await vscode.env.clipboard.writeText(commitHash);
@@ -107,7 +107,18 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(copyRepoName, copyRepoPath, copyTextWithComment, copyBranchName, copyCommitHash);
 }
 
-function getWorkspacePath(): string | null {
+// Resolves to the workspace folder that actually owns `referenceUri` (the
+// file being copied or right-clicked), rather than always the first folder
+// in a multi-root workspace — otherwise a repo could report another
+// workspace folder's name just because it happens to be listed first.
+function getWorkspacePath(referenceUri?: vscode.Uri): string | null {
+    if (referenceUri) {
+        const owningFolder = vscode.workspace.getWorkspaceFolder(referenceUri);
+        if (owningFolder) {
+            return owningFolder.uri.fsPath;
+        }
+    }
+
     const workspaceFolders = vscode.workspace.workspaceFolders;
 
     if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -117,8 +128,8 @@ function getWorkspacePath(): string | null {
     return workspaceFolders[0].uri.fsPath;
 }
 
-async function getRepositoryName(): Promise<string | null> {
-    const workspaceRoot = getWorkspacePath();
+async function getRepositoryName(referenceUri?: vscode.Uri): Promise<string | null> {
+    const workspaceRoot = getWorkspacePath(referenceUri);
 
     if (!workspaceRoot) {
         return null;
@@ -145,8 +156,8 @@ async function getRepositoryName(): Promise<string | null> {
     return path.basename(workspaceRoot);
 }
 
-async function getBranchName(): Promise<string | null> {
-    const workspaceRoot = getWorkspacePath();
+async function getBranchName(referenceUri?: vscode.Uri): Promise<string | null> {
+    const workspaceRoot = getWorkspacePath(referenceUri);
 
     if (!workspaceRoot) {
         return null;
@@ -164,8 +175,8 @@ async function getBranchName(): Promise<string | null> {
     }
 }
 
-async function getCommitHash(): Promise<string | null> {
-    const workspaceRoot = getWorkspacePath();
+async function getCommitHash(referenceUri?: vscode.Uri): Promise<string | null> {
+    const workspaceRoot = getWorkspacePath(referenceUri);
 
     if (!workspaceRoot) {
         return null;

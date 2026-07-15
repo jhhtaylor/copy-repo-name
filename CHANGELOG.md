@@ -2,6 +2,11 @@
 
 All notable changes to the "Copy Repo Name" extension will be documented in this file.
 
+## [0.1.6] - 2026-07-15
+
+### Fixed
+- All copy commands now resolve the repository/branch/commit from the workspace folder that actually owns the file being copied or right-clicked, instead of always the first folder in the workspace. In a multi-root workspace, this previously meant a file physically belonging to one folder could report another folder's repo name if that folder happened to be listed first.
+
 ## [0.1.5] - 2026-07-09
 
 ### Added
