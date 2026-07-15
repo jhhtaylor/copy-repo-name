@@ -10,3 +10,5 @@ webpack.config.js
 **/*.ts
 node_modules/**
 out/**
+**/.claude/**
+.github/**
