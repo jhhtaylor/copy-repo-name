@@ -2,6 +2,11 @@
 
 All notable changes to the "Copy Repo Name" extension will be documented in this file.
 
+## [0.1.7] - 2026-07-16
+
+### Fixed
+- The packaged extension no longer includes a local Claude Code settings file that had been leaking into the VSIX since `.vscodeignore` didn't exclude `.claude/`. No secrets were included — just a local tool-permission allowlist — but it shouldn't have shipped.
+
 ## [0.1.6] - 2026-07-15
 
 ### Fixed
